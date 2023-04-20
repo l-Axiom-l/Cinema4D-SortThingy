@@ -1,5 +1,5 @@
 import c4d
-import time
+import sys
 from c4d import gui
 
 def main():
@@ -20,6 +20,7 @@ def main():
 def getHierarchy(var):
     temp = []
     obj = var
+    sys.setrecursionlimit(5000)
     if obj != None:
         
         #if(obj.GetTag(c4d.Ttexture) != None):
@@ -39,7 +40,6 @@ def Sort(folders):
         print(name)
         null.SetName(name)
         doc.InsertObject(null)
-        time.sleep(1)
         for o in obj:
             o.Remove()
             doc.InsertObject(o,parent=null)
