@@ -2,14 +2,19 @@ import c4d
 import sys
 from c4d import gui
 
+
+
 def main():
+    sys.setrecursionlimit(10000)
     obj = doc.GetFirstObject()
-    objects = getHierarchy(obj)
+    objects = GetAllObjects()
     mat = doc.GetFirstMaterial()
     folders = []
     while mat != None:
-        temp = list(filter(lambda x: x.GetTag(c4d.Ttexture) != None, objects)) 
-        temp = list(filter(lambda x: x.GetTag(c4d.Ttexture).GetMaterial().Compare(mat) == True, temp)) 
+        print("Lambda Initiated")
+        temp = list(filter(lambda x: x.GetMaterial().Compare(mat) == True, objects))
+        temp = list(map(lambda x: x.GetObject(), temp))
+        print("Lambda finished") 
         folders.append(temp) 
         mat = mat.GetNext()
 
@@ -17,32 +22,33 @@ def main():
     gui.UpdateMenus()
     gui.MessageDialog('mst executed with status code 200')
 
-def getHierarchy(var):
-    temp = []
-    obj = var
-    sys.setrecursionlimit(5000)
-    if obj != None:
-        
-        #if(obj.GetTag(c4d.Ttexture) != None):
-        temp.append(obj)
-        temp.extend(getHierarchy(obj.GetNext()))
-        temp.extend(getHierarchy(obj.GetDown()))
-    return temp
+def GetAllObjects():
+    mat = doc.GetFirstMaterial()
+    objects = []
+    index = 0
+    while mat != None:
+        matA = mat[c4d.ID_MATERIALASSIGNMENTS]
+        for o in range(0, matA.GetObjectCount()):
+            objects.append(matA.ObjectFromIndex(doc, o))
+            index = index + 1
+            print(index)
+        mat = mat.GetNext()
+    
+    return objects
 
 def Sort(folders):
+    print("Sort Initiated")
     for obj in folders:
         if len(obj) <= 0:
             continue
         
         null = c4d.BaseObject(c4d.Onull)
-        print(obj[0].GetTag(c4d.Ttexture))
         name = obj[0].GetTag(c4d.Ttexture).GetMaterial().GetName()
-        print(name)
         null.SetName(name)
         doc.InsertObject(null)
         for o in obj:
             o.Remove()
             doc.InsertObject(o,parent=null)
-            
+        print("Sort finished")
 if __name__=='__main__':
     main()
